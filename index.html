@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>SPARE-CA Score</title>
+<meta name="description" content="SPARE-CA Score — Predicting AL-CM Risk during Evaluation of Monoclonal Abnormalities in Cardiac Amyloidosis. A validated clinical calculator from Columbia University Irving Medical Center.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🫀</text></svg>">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,400;0,600;0,700;1,400;1,600;1,700&family=Inter:wght@300;400;500;600;700&display=swap');
+
+:root {
+  --bg:      #F7F5F0;
+  --card:    #FFFFFF;
+  --primary: #1D3557;
+  --teal:    #0D7377;
+  --attr:    #457B9D;
+  --al:      #E63946;
+  --green:   #2D936C;
+  --amber:   #D4880F;
+  --border:  #D4CFC5;
+  --text:    #2B2B2B;
+  --muted:   #8A8680;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: 'Inter', system-ui, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  padding: 40px 20px 60px;
+}
+
+.container { max-width: 900px; margin: 0 auto; }
+
+/* ── HEADER ── */
+header { text-align: center; margin-bottom: 32px; }
+
+h1 {
+  font-family: 'Crimson Pro', serif;
+  font-size: 42px; font-weight: 700;
+  color: var(--primary); line-height: 1.1;
+  margin-bottom: 6px;
+}
+.header-sub {
+  font-size: 12px; color: var(--muted);
+  letter-spacing: 0.3px;
+}
+
+/* ── INPUT PANEL ── */
+.input-panel {
+  background: var(--card);
+  border-radius: 16px; padding: 28px;
+  border: 1px solid var(--border);
+  box-shadow: 0 2px 16px rgba(0,0,0,0.04);
+  margin-bottom: 20px;
+}
+.panel-title {
+  font-family: 'Crimson Pro', serif;
+  font-size: 20px; font-weight: 700; color: var(--primary);
+  margin-bottom: 20px; padding-bottom: 10px;
+  border-bottom: 2px solid var(--border);
+}
+.vars-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 16px; margin-bottom: 16px;
+}
+@media(max-width: 640px) { .vars-grid { grid-template-columns: 1fr; } }
+
+.input-group {
+  background: #FAFAF8;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--border);
+  padding: 14px 14px 12px;
+  transition: border-left-color 0.25s, background 0.25s;
+}
+.input-group.selected { border-left-color: var(--primary); }
+.input-label {
+  font-size: 11px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 1.5px;
+  color: var(--muted); margin-bottom: 2px; display: block;
+  transition: color 0.2s;
+}
+.input-desc {
+  font-size: 11px; color: #6B6B6B;
+  margin-bottom: 10px; display: block; line-height: 1.4;
+}
+
+/* Per-variable colours */
+#grp-age  { border-left-color: var(--teal); }
+#grp-age  .input-label { color: var(--teal); }
+#grp-age.selected  { background: #F0F7F7; }
+
+#grp-dflc { border-left-color: var(--amber); }
+#grp-dflc .input-label { color: var(--amber); }
+#grp-dflc.selected { background: #FDF7EE; }
+
+#grp-pyp  { border-left-color: var(--primary); }
+#grp-pyp  .input-label { color: var(--primary); }
+#grp-pyp.selected  { background: #F0F3F7; }
+
+/* Buttons */
+.btn-group { display: flex; gap: 6px; flex-wrap: wrap; }
+.btn-opt {
+  padding: 10px 8px 8px;
+  border: 1.5px solid var(--border); border-radius: 8px;
+  background: var(--card);
+  font-family: 'Inter', system-ui, sans-serif;
+  cursor: pointer; color: var(--text);
+  transition: all 0.18s;
+  flex: 1; text-align: center;
+  min-height: 48px; min-width: fit-content;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: 2px;
+}
+.btn-opt:hover { border-color: var(--primary); background: #F0EDE6; }
+.btn-opt.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+.btn-main { font-size: 13px; font-weight: 600; }
+.btn-pts  { font-size: 11px; font-weight: 500; color: var(--muted); }
+.btn-opt.active .btn-pts { color: rgba(255,255,255,0.7); }
+
+/* Reset */
+.reset-btn {
+  width: 100%; margin-top: 4px; padding: 11px;
+  background: transparent; color: var(--muted);
+  font-size: 12px; font-family: 'Inter', system-ui, sans-serif;
+  border: 1.5px solid var(--border); border-radius: 10px;
+  cursor: pointer; transition: all 0.15s; min-height: 44px;
+}
+.reset-btn:hover { border-color: var(--primary); color: var(--primary); }
+
+/* ── RESULT CARD ── */
+.result-card {
+  background: var(--card);
+  border-radius: 16px; padding: 28px;
+  border: 1px solid var(--border);
+  box-shadow: 0 2px 16px rgba(0,0,0,0.04);
+  border-top: 4px solid var(--border);
+  transition: border-top-color 0.4s;
+  margin-bottom: 20px;
+}
+.result-card.card-defer  { border-top-color: var(--green); }
+.result-card.card-biopsy { border-top-color: var(--al); }
+
+.probability-display { text-align: center; padding: 8px 0; }
+.prob-range-wrap {
+  margin: 0 auto;
+  background: var(--bg); border: 1px solid var(--border);
+  border-radius: 10px; padding: 14px 24px;
+  display: inline-block; min-width: 260px;
+}
+.prob-range-value {
+  font-family: 'Crimson Pro', serif;
+  font-size: 32px; font-weight: 700; line-height: 1; transition: color 0.4s;
+}
+.prob-range-label {
+  font-size: 11px; font-weight: 600; text-transform: uppercase;
+  letter-spacing: 1px; color: var(--muted); margin-top: 5px;
+}
+.recommendation {
+  text-align: center; padding: 16px 20px;
+  border-radius: 10px; font-size: 16px; font-weight: 700;
+  margin-top: 16px; letter-spacing: 0.3px;
+}
+.rec-attr { background: #1A7A4A; color: #fff; box-shadow: 0 2px 8px rgba(26,122,74,0.25); }
+.rec-al   { background: var(--al); color: #fff; box-shadow: 0 2px 8px rgba(230,57,70,0.25); }
+
+
+
+.disclaimer {
+  background: #FEF5E7; border: 1px solid #F0D9A0;
+  border-radius: 10px; padding: 14px 18px;
+  font-size: 12px; color: var(--amber); line-height: 1.7;
+  margin-bottom: 20px;
+}
+.disclaimer strong { color: #8A5700; }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <header>
+    <h1>SPARE-CA Score</h1>
+    <p class="header-sub">Predicting AL-CM Risk during Evaluation of Monoclonal Abnormalities in Cardiac Amyloidosis</p>
+  </header>
+
+  <!-- ── INPUT PANEL ── -->
+  <div class="input-panel">
+    <div class="panel-title">Patient Parameters</div>
+    <div class="vars-grid">
+
+      <!-- Age -->
+      <div class="input-group" id="grp-age">
+        <label class="input-label">Age</label>
+        <span class="input-desc">Age at the time of serum free light chain measurement</span>
+        <div class="btn-group" id="age-group">
+          <button class="btn-opt" data-val="young" data-pts="1" onclick="selectAge(this)">
+            <span class="btn-main">&lt; 78 years</span>
+            <span class="btn-pts">+1 pt</span>
+          </button>
+          <button class="btn-opt" data-val="old" data-pts="0" onclick="selectAge(this)">
+            <span class="btn-main">≥ 78 years</span>
+            <span class="btn-pts">+0 pts</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- dFLC -->
+      <div class="input-group" id="grp-dflc">
+        <label class="input-label">Absolute Serum dFLC</label>
+        <span class="input-desc">Absolute difference between involved and uninvolved serum free light chain (mg/dL)</span>
+        <div class="btn-group" id="dflc-group">
+          <button class="btn-opt" data-val="low" data-pts="0" onclick="selectDflc(this)">
+            <span class="btn-main">&lt; 12.5 mg/dL</span>
+            <span class="btn-pts">+0 pts</span>
+          </button>
+          <button class="btn-opt" data-val="high" data-pts="1" onclick="selectDflc(this)">
+            <span class="btn-main">≥ 12.5 mg/dL</span>
+            <span class="btn-pts">+1 pt</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Perugini Grade -->
+      <div class="input-group" id="grp-pyp">
+        <label class="input-label">Perugini Grade (CARI)</label>
+        <span class="input-desc">Visual grade on cardiac radionuclide imaging (PYP / DPD / HMDP)</span>
+        <div class="btn-group" id="pyp-group">
+          <button class="btn-opt" data-val="0" data-pts="2" onclick="selectPYP(this)">
+            <span class="btn-main">Grade 0</span>
+            <span class="btn-pts">+2 pts</span>
+          </button>
+          <button class="btn-opt" data-val="1" data-pts="2" onclick="selectPYP(this)">
+            <span class="btn-main">Grade 1</span>
+            <span class="btn-pts">+2 pts</span>
+          </button>
+          <button class="btn-opt" data-val="2" data-pts="1" onclick="selectPYP(this)">
+            <span class="btn-main">Grade 2</span>
+            <span class="btn-pts">+1 pt</span>
+          </button>
+          <button class="btn-opt" data-val="3" data-pts="0" onclick="selectPYP(this)">
+            <span class="btn-main">Grade 3</span>
+            <span class="btn-pts">+0 pts</span>
+          </button>
+        </div>
+      </div>
+
+    </div>
+    <button class="reset-btn" onclick="resetAll()">↺ Reset</button>
+  </div>
+
+  <!-- ── RESULT CARD ── -->
+  <div class="result-card" id="main-result-card">
+    <div class="probability-display">
+      <div class="prob-range-wrap">
+        <div class="prob-range-value" id="probRange">—</div>
+        <div class="prob-range-label">AL-CM Probability</div>
+      </div>
+    </div>
+    <div class="recommendation" id="recommendation" style="display:none"></div>
+  </div>
+
+  <!-- ── DISCLAIMER ── -->
+  <div class="disclaimer">
+    <strong>⚠ Research and educational use only.</strong>
+    Clinical decisions must incorporate full patient history, imaging context, haematology evaluation, and physician judgement. This tool does not replace endomyocardial biopsy where clinically mandated. To be used when cardiac amyloidosis involvement is suspected.
+  </div>
+
+
+
+</div>
+
+<script>
+let pypSel=null, dflcSel=null, ageSel=null;
+let pypPts=0, dflcPts=0, agePts=0;
+
+const scoreRanges = {
+  0:{label:'0.06%'},
+  1:{label:'1.44%–2.00%'},
+  2:{label:'5.86%–39.15%'},
+  3:{label:'66.25%–93.63%'},
+  4:{label:'98.42%–99.39%'}
+};
+
+function selectAge(btn){
+  document.querySelectorAll('#age-group .btn-opt').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  ageSel=btn.dataset.val; agePts=parseInt(btn.dataset.pts);
+  document.getElementById('grp-age').classList.add('selected');
+  liveUpdate();
+}
+function selectDflc(btn){
+  document.querySelectorAll('#dflc-group .btn-opt').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  dflcSel=btn.dataset.val; dflcPts=parseInt(btn.dataset.pts);
+  document.getElementById('grp-dflc').classList.add('selected');
+  liveUpdate();
+}
+function selectPYP(btn){
+  document.querySelectorAll('#pyp-group .btn-opt').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  pypSel=btn.dataset.val; pypPts=parseInt(btn.dataset.pts);
+  document.getElementById('grp-pyp').classList.add('selected');
+  liveUpdate();
+}
+
+function liveUpdate(){
+  if(!pypSel||!dflcSel||!ageSel) return;
+  calculate();
+}
+
+function calculate(){
+  const score=agePts+dflcPts+pypPts;
+  const isDefer=score<=1;
+  const range=scoreRanges[score];
+
+  const probEl=document.getElementById('probRange');
+  probEl.textContent=range.label;
+  probEl.style.color=score>=2?'var(--al)':'var(--attr)';
+
+  const recEl=document.getElementById('recommendation');
+  recEl.style.display='block';
+  recEl.textContent=isDefer
+    ?'Low risk of AL-CM — Endomyocardial biopsy may be deferred'
+    :'High risk of AL-CM — Endomyocardial biopsy recommended';
+  recEl.className='recommendation '+(isDefer?'rec-attr':'rec-al');
+
+  document.getElementById('main-result-card').className=
+    'result-card '+(isDefer?'card-defer':'card-biopsy');
+}
+
+function resetAll(){
+  pypSel=null;dflcSel=null;ageSel=null;
+  pypPts=0;dflcPts=0;agePts=0;
+  document.querySelectorAll('.btn-opt').forEach(b=>b.classList.remove('active'));
+  ['grp-age','grp-dflc','grp-pyp'].forEach(id=>
+    document.getElementById(id).classList.remove('selected'));
+  document.getElementById('probRange').textContent='—';
+  document.getElementById('probRange').style.color='var(--text)';
+  document.getElementById('recommendation').style.display='none';
+  document.getElementById('main-result-card').className='result-card';
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+</script>
+</body>
+</html>
